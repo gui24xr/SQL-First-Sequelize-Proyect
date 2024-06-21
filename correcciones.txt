@@ -1,0 +1,18 @@
+1- AGREGAR AUTOINCREMENTO A TABLA ESTADOS_TURNOS
+
+
+2
+//Modificar a string los id de algunas tablas:
+
+registros de historias clinicas: los id seran: legajo_paciente + fecha aaaammdd + numero de registro en el dia
+Ej una persona que visito 2 medicos en el dia y tuvo2 registros es legajo + mfecha + 2
+
+3-
+renombrar especialidades como especialidades medicas
+
+4- en tablas personales sacar NOT NULL en dni xq es irrelevante
+  agregar not null a campo nombre 1. apellido y fecha de nac
+
+
+5- se saca domicilios y telefonos de datos personales para
+construir 2 tablas aparte
