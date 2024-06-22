@@ -4,3 +4,7 @@ SELECT * FROM estados_turnos;
 SELECT * FROM prestaciones;
 SELECT * FROM consultorios;
 SELECT * FROM especialidades_medicas;
+SELECT * FROM datos_domicilios;
+SELECT * FROM datos_telefonicos;
+SELECT * FROM usuarios_sistema;
+SELECT * FROM datos_personales;
