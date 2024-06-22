@@ -8,3 +8,6 @@ SELECT * FROM datos_domicilios;
 SELECT * FROM datos_telefonicos;
 SELECT * FROM usuarios_sistema;
 SELECT * FROM datos_personales;
+SELECT * FROM empleados;
+SELECT * FROM medicos;
+SELECT * FROM pacientes;
