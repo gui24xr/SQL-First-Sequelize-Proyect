@@ -1,6 +1,17 @@
 CREATE DATABASE administracionconsultorios;
 USE administracionconsultorios;
 
+-- Tabla contadores.
+CREATE TABLE contadores (
+    id_contador INT AUTO_INCREMENT,
+    fecha DATE NOT NULL UNIQUE,
+    turnos_otorgados INT,
+    visitas_pacientes INT,
+    ocupaciones_consultorios INT,
+    registros_historias_clinicas INT,
+    PRIMARY KEY (id_contador)
+);
+
 -- Tabla roles usuarios sistema
 CREATE TABLE roles_usuario_sistema(
     id_user_rol INT AUTO_INCREMENT,
@@ -199,11 +210,3 @@ CREATE TABLE registro_visitas_pacientes (
 );
 
 
-CREATE TABLE contador_id_asignados (
-    id_contador_id_asignados INT AUTO_INCREMENT,
-    turnos_otorgados INT,
-    visitas_pacientes INT,
-    ocupaciones_consultorios INT,
-    registros_historias_clinicas INT,
-    PRIMARY KEY (id_contador_id_asignados)
-);

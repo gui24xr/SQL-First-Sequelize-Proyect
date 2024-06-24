@@ -61,20 +61,51 @@ select getEdad('1985-12-24')
 
 
 
+
 DELIMITER //
 
-CREATE FUNCTION get_id_turno RETURNS VARCHAR(30)
-DETERMINISTIC
+CREATE PROCEDURE actualizar_fecha_contadores()
 BEGIN
-    declare id_for_turno VARCHAR(30)
-    -- Transformo la fecha en Dia Giuliano
+    -- Fecha en la que estoy dando contadores.
+    DECLARE fecha_reciente DATE;
 
-    -- Miro el contador el numero que hay y lo copio.ABORT
+    SELECT MAX(fecha) INTO fecha_reciente
+    FROM contadores;
 
-    --pongo en id for turno la combinacion anio,diajuliano y numero de turno en tabla + 1
-
-    --actualizo el numero
-    RETURN id_for_turno
+    -- Si fecha es anterior entonces creo nuevo registro con contadores a cero.
+    IF fecha_reciente < CURDATE() THEN
+        INSERT INTO contadores
+        (fecha,turnos_otorgados,visitas_pacientes,ocupaciones_consultorios,registros_historias_clinicas)
+        VALUES
+        (CURRENT_TIMESTAMP,1,1,1,1);
+    END IF;
 END //
 
 DELIMITER ;
+
+
+
+DELIMITER //
+
+CREATE FUNCTION get_turno() RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE turno_actual INT;
+    -- Actualizo la tabla contadores.
+    CALL actualizar_fecha_contadores();
+    -- Busco el registro que lleva el conteo de hoy.
+    SELECT turnos_otorgados INTO turno_actual
+    FROM contadores
+    WHERE fecha = CURDATE();
+    -- Ahora actualizo el contador de turnos.
+    UPDATE contadores
+    SET turnos_otorgados = turno_actual + 1
+    WHERE fecha = CURDATE();
+    -- Devuelvo el turno obtenido.
+    RETURN turno_actual;
+END //
+
+DELIMITER ;
+
+
+SELECT get_turno() as Turno;

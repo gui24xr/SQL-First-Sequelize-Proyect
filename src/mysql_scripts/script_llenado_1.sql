@@ -1,3 +1,11 @@
+
+-- Tabla contadores
+INSERT INTO contadores
+(fecha,turnos_otorgados,visitas_pacientes,ocupaciones_consultorios,registros_historias_clinicas)
+VALUES
+(CURRENT_TIMESTAMP,1,1,1,1);
+
+
 -- Tabla de roles_usuario_sistema
 INSERT INTO roles_usuario_sistema 
 (rol)
@@ -85,3 +93,4 @@ VALUES
 ('Reumatología'),
 ('Traumatología'),
 ('Urología');
+
