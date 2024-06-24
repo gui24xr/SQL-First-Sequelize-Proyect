@@ -12,6 +12,7 @@ CREATE TABLE roles_usuario_sistema(
 CREATE TABLE roles_empleados(
     id_funcion INT AUTO_INCREMENT,
     funcion VARCHAR(30) NOT NULL,
+    abreviatura_funcion VARCHAR(3) UNIQUE,
     PRIMARY KEY (id_funcion)
 );
 
@@ -68,9 +69,10 @@ CREATE TABLE datos_telefonicos (
     PRIMARY KEY (id_datos_telefonicos)
 );
 
+
 -- Tabla de Usuarios del Sistema
 CREATE TABLE usuarios_sistema (
-    user_id INT AUTO_INCREMENT,
+    user_id VARCHAR(30),
     user_email VARCHAR(254),
     user_password VARCHAR(255) NOT NULL,
     user_rol INT,
@@ -87,19 +89,15 @@ CREATE TABLE usuarios_sistema (
 CREATE TABLE datos_personales (
     dni VARCHAR(30),
     nombre1 VARCHAR(255) NOT NULL,
-    nombre2 VARCHAR(255) DEFAULT 'S/D',
+    nombre2 VARCHAR(255) DEFAULT NULL,
     apellido VARCHAR(255) NOT NULL,
     fecha_nacimiento DATE NOT NULL,
-    domicilio_principal INT,
-    domicilio_alternativo INT,
-    telefonos INT, -- Cambiado a INT para referencia a datos_telefonicos
+    domicilio INT,
+    telefonos INT, 
     email_contacto VARCHAR(254),
-    user_id INT DEFAULT NULL,
     PRIMARY KEY (dni),
-    FOREIGN KEY (domicilio_principal) REFERENCES datos_domicilios(id_datos_domicilio),
-    FOREIGN KEY (domicilio_alternativo) REFERENCES datos_domicilios(id_datos_domicilio),
-    FOREIGN KEY (telefonos) REFERENCES datos_telefonicos(id_datos_telefonicos),
-    FOREIGN KEY (user_id) REFERENCES usuarios_sistema(user_id)
+    FOREIGN KEY (domicilio) REFERENCES datos_domicilios(id_datos_domicilio),
+    FOREIGN KEY (telefonos) REFERENCES datos_telefonicos(id_datos_telefonicos)
 );
 
 
@@ -108,18 +106,20 @@ CREATE TABLE datos_personales (
 CREATE TABLE empleados (
     legajo_empleado VARCHAR(30),
     dni VARCHAR(30),
+    user_system VARCHAR(30) DEFAULT NULL,
     id_funcion INT,
     PRIMARY KEY (legajo_empleado),
     FOREIGN KEY (dni) REFERENCES datos_personales(dni),
+    FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id),
     FOREIGN KEY (id_funcion) REFERENCES roles_empleados(id_funcion)
  );
 
  -- Tabla de Médicos
 CREATE TABLE medicos (
-    legajo_medico VARCHAR(30),
+    matricula_medico VARCHAR(30),
     dni VARCHAR(30),
     id_especialidad INT,
-    PRIMARY KEY (legajo_medico),
+    PRIMARY KEY (matricula_medico),
     FOREIGN KEY (dni) REFERENCES datos_personales(dni),
     FOREIGN KEY (id_especialidad) REFERENCES especialidades_medicas(id_especialidad)
 );
@@ -129,22 +129,25 @@ CREATE TABLE medicos (
 CREATE TABLE pacientes (
     legajo_paciente VARCHAR(30),
     dni VARCHAR(30),
+    user_system VARCHAR(30) DEFAULT NULL,
     PRIMARY KEY (legajo_paciente),
-    FOREIGN KEY (dni) REFERENCES datos_personales(dni)
+    FOREIGN KEY (dni) REFERENCES datos_personales(dni),
+    FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id)
 );
+
 
 
 -- Tabla de Ocupación de Consultorios
 CREATE TABLE registros_historias_clinicas (
     id_registro VARCHAR(30),
-    legajo_medico VARCHAR(30),
+    matricula_medico VARCHAR(30),
     legajo_paciente VARCHAR(30),
     diagnostico TEXT,
     observaciones TEXT,
     medicacion TEXT,
     fecha_hora DATETIME,
     PRIMARY KEY (id_registro),
-    FOREIGN KEY (legajo_medico) REFERENCES medicos(legajo_medico),
+    FOREIGN KEY (matricula_medico) REFERENCES medicos(matricula_medico),
     FOREIGN KEY (legajo_paciente) REFERENCES pacientes(legajo_paciente)
 );
 
@@ -152,7 +155,7 @@ CREATE TABLE registros_historias_clinicas (
 -- Tabla de Anuncios en Recepción
 CREATE TABLE turnos_otorgados (
     id_turno VARCHAR(30),
-    legajo_medico VARCHAR(30) NOT NULL,
+    matricula_medico VARCHAR(30) NOT NULL,
     legajo_paciente VARCHAR(30) NOT NULL,
     fecha_hora_reservada DATETIME,
     id_prestacion_tentativa INT,
@@ -161,7 +164,7 @@ CREATE TABLE turnos_otorgados (
     estado_turno INT,
     consultorio_asignado INT,
     PRIMARY KEY (id_turno),
-    FOREIGN KEY (legajo_medico) REFERENCES medicos(legajo_medico),
+    FOREIGN KEY (matricula_medico) REFERENCES medicos(matricula_medico),
     FOREIGN KEY (legajo_paciente) REFERENCES pacientes(legajo_paciente),
     FOREIGN KEY (id_prestacion_tentativa) REFERENCES prestaciones(id_prestacion),
     FOREIGN KEY (estado_turno) REFERENCES estados_turnos(id_estado_turno),
@@ -171,12 +174,12 @@ CREATE TABLE turnos_otorgados (
 -- Tabla de Ocupación de Consultorios
 CREATE TABLE ocupacion_consultorios (
     id_ocupacion VARCHAR(30),
-    legajo_medico VARCHAR(30) NOT NULL,
+    legajo_empleado VARCHAR(30) NOT NULL,
     numero_consultorio INT NOT NULL,
     fecha_hora_inicio DATETIME NOT NULL,
     fecha_hora_fin DATETIME NOT NULL,
     PRIMARY KEY (id_ocupacion),
-    FOREIGN KEY (legajo_medico) REFERENCES medicos(legajo_medico),
+    FOREIGN KEY (legajo_empleado) REFERENCES empleados(legajo_empleado),
     FOREIGN KEY (numero_consultorio) REFERENCES consultorios(numero_consultorio)
 );
 
@@ -196,3 +199,11 @@ CREATE TABLE registro_visitas_pacientes (
 );
 
 
+CREATE TABLE contador_id_asignados (
+    id_contador_id_asignados INT AUTO_INCREMENT,
+    turnos_otorgados INT,
+    visitas_pacientes INT,
+    ocupaciones_consultorios INT,
+    registros_historias_clinicas INT,
+    PRIMARY KEY (id_contador_id_asignados)
+);
