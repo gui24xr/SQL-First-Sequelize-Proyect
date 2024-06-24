@@ -108,4 +108,29 @@ END //
 DELIMITER ;
 
 
+
+
+
 SELECT get_turno() as Turno;
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE crear_datos_personales_vacios(dni_persona VARCHAR(30))
+BEGIN
+    DECLARE personas_con_dni INT;
+
+    /* Verifico si el dni existe en datos personales */
+    SELECT COUNT(*) INTO personas_con_dni
+    FROM datos_personales
+    WHERE dni = dni_persona;
+
+    /* Si no hay personas con ese dni, ingreso ese nuevo dni a datos personales y quedara listo para completar */
+    IF personas_con_dni = 0 THEN
+        INSERT INTO datos_personales (dni, nombre1, apellido)
+        VALUES (dni_persona, 'S/Nombre', 'S/Apellido');
+    END IF;
+END //
+
+DELIMITER ;

@@ -1,7 +1,7 @@
 
 -- Tabla contadores
 INSERT INTO contadores
-(fecha,turnos_otorgados,visitas_pacientes,ocupaciones_consultorios,registros_historias_clinicas)
+(fecha,turnos_otorgados,recepciones_pacientes,ocupaciones_consultorios,registros_historias_clinicas)
 VALUES
 (CURRENT_TIMESTAMP,1,1,1,1);
 
@@ -47,8 +47,8 @@ VALUES
 
 
 -- Tabla de Prestaciones
-INSERT INTO prestaciones
-(obra_social,plan,activa)
+INSERT INTO prestaciones_obras_sociales
+(obra_social,plan,en_servicio)
 VALUES
 ('PARTICULAR', 'S/N', true),
 ('GALENO', 'S/N', true),
@@ -61,17 +61,32 @@ VALUES
 ('SALUPLAN', 'S/N', true);
 
 
+-- Tabla sedes_establecimiento
+INSERT INTO sedes_establecimiento
+(nombre_sede,en_servicio)
+VALUES
+('Sede 1',true),
+('Sede 2', true),
+('Sede 3', false);
+
 -- Tabla consultorios
 INSERT INTO consultorios
-(numero_consultorio, en_servicio)
+(id_sede_establecimiento,nombre_consultorio, en_servicio)
 VALUES
-(101, true),
-(102, true),
-(103, true),
-(104, true),
-(201, false),
-(202, true),
-(203, false);
+(1,101, true),
+(1,102, true),
+(1,103, true),
+(1,104, true),
+(1,201, false),
+(1,202, true),
+(2,203, false),
+(2,101, true),
+(2,102, true),
+(2,103, true),
+(2,104, true),
+(2,201, false),
+(2,202, true),
+(2,203, true);
 
 
 -- Tabla especialidades medicas

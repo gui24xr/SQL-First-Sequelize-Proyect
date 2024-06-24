@@ -6,7 +6,7 @@ CREATE TABLE contadores (
     id_contador INT AUTO_INCREMENT,
     fecha DATE NOT NULL UNIQUE,
     turnos_otorgados INT,
-    visitas_pacientes INT,
+    recepciones_pacientes INT,
     ocupaciones_consultorios INT,
     registros_historias_clinicas INT,
     PRIMARY KEY (id_contador)
@@ -34,20 +34,31 @@ CREATE TABLE estados_turnos (
     PRIMARY KEY (id_estado_turno)
 );
 
--- Tabla de Prestaciones
-CREATE TABLE prestaciones (
-    id_prestacion INT AUTO_INCREMENT,
+-- Tabla de Prestaciones de obras sociales.
+CREATE TABLE prestaciones_obras_sociales (
+    id_prestacion_obra_social INT AUTO_INCREMENT,
     obra_social VARCHAR(255),
     plan VARCHAR(255),
-    activa BOOLEAN,
-    PRIMARY KEY (id_prestacion)
+    en_servicio BOOLEAN,
+    PRIMARY KEY (id_prestacion_obra_social)
+);
+
+-- Tabla de sedes del establecimiento
+CREATE TABLE sedes_establecimiento (
+    id_sede_establecimiento INT AUTO_INCREMENT,
+    nombre_sede VARCHAR(100),
+    en_servicio BOOLEAN,
+    PRIMARY KEY (id_sede_establecimiento)
 );
 
 -- Tabla de Consultorios
 CREATE TABLE consultorios (
-    numero_consultorio INT,
+    id_consultorio INT AUTO_INCREMENT,
+    id_sede_establecimiento INT DEFAULT NULL,
+    nombre_consultorio VARCHAR(100),
     en_servicio BOOLEAN,
-    PRIMARY KEY (numero_consultorio)
+    PRIMARY KEY (id_consultorio),
+    FOREIGN KEY (id_sede_establecimiento) REFERENCES sedes_establecimiento(id_sede_establecimiento)
 );
 
 -- Tabla especialidades
@@ -102,9 +113,9 @@ CREATE TABLE datos_personales (
     nombre1 VARCHAR(255) NOT NULL,
     nombre2 VARCHAR(255) DEFAULT NULL,
     apellido VARCHAR(255) NOT NULL,
-    fecha_nacimiento DATE NOT NULL,
-    domicilio INT,
-    telefonos INT, 
+    fecha_nacimiento DATE DEFAULT NULL ,
+    domicilio INT DEFAULT NULL,
+    telefonos INT DEFAULT NULL, 
     email_contacto VARCHAR(254),
     PRIMARY KEY (dni),
     FOREIGN KEY (domicilio) REFERENCES datos_domicilios(id_datos_domicilio),
@@ -126,15 +137,25 @@ CREATE TABLE empleados (
  );
 
  -- Tabla de Médicos
-CREATE TABLE medicos (
-    matricula_medico VARCHAR(30),
-    dni VARCHAR(30),
+CREATE TABLE prestaciones_medicas (
+    id_prestacion_medica INT AUTO_INCREMENT,
     id_especialidad INT,
-    PRIMARY KEY (matricula_medico),
-    FOREIGN KEY (dni) REFERENCES datos_personales(dni),
-    FOREIGN KEY (id_especialidad) REFERENCES especialidades_medicas(id_especialidad)
+    matricula_medico VARCHAR(30),
+    legajo_empleado VARCHAR(30) NOT NULL,
+    PRIMARY KEY (id_prestacion_medica),
+    FOREIGN KEY (id_especialidad) REFERENCES especialidades_medicas(id_especialidad),
+    FOREIGN KEY (legajo_empleado) REFERENCES empleados(legajo_empleado)
 );
 
+-- Tabla para relacionar las prestaciones de obra social con las prestaciones médicas de los médicos
+CREATE TABLE prestaciones_habilitadas_medicos (
+    id_prestacion_habilitada INT AUTO_INCREMENT,
+    id_prestacion_medica INT,
+    id_prestacion_obra_social INT,
+    PRIMARY KEY (id_prestacion_habilitada),
+    FOREIGN KEY (id_prestacion_medica) REFERENCES prestaciones_medicas( id_prestacion_medica),
+    FOREIGN KEY (id_prestacion_obra_social) REFERENCES prestaciones_obras_sociales(id_prestacion_obra_social)
+);
 
 -- Tabla de Pacientes
 CREATE TABLE pacientes (
@@ -151,62 +172,60 @@ CREATE TABLE pacientes (
 -- Tabla de Ocupación de Consultorios
 CREATE TABLE registros_historias_clinicas (
     id_registro VARCHAR(30),
-    matricula_medico VARCHAR(30),
+    id_prestacion_medica INT,
     legajo_paciente VARCHAR(30),
     diagnostico TEXT,
     observaciones TEXT,
     medicacion TEXT,
     fecha_hora DATETIME,
     PRIMARY KEY (id_registro),
-    FOREIGN KEY (matricula_medico) REFERENCES medicos(matricula_medico),
+    FOREIGN KEY (id_prestacion_medica) REFERENCES prestaciones_medicas(id_prestacion_medica),
     FOREIGN KEY (legajo_paciente) REFERENCES pacientes(legajo_paciente)
 );
-
 
 -- Tabla de Anuncios en Recepción
 CREATE TABLE turnos_otorgados (
     id_turno VARCHAR(30),
-    matricula_medico VARCHAR(30) NOT NULL,
+    id_prestacion_medica INT,
     legajo_paciente VARCHAR(30) NOT NULL,
     fecha_hora_reservada DATETIME,
-    id_prestacion_tentativa INT,
+    id_prestacion_obra_social_inicial INT,
     fecha_hora_otorgamiento DATETIME,
-    dni_otorgante_turno VARCHAR(30),
+    user_system_otorgante_turno VARCHAR(30),
     estado_turno INT,
-    consultorio_asignado INT,
     PRIMARY KEY (id_turno),
-    FOREIGN KEY (matricula_medico) REFERENCES medicos(matricula_medico),
+    FOREIGN KEY (id_prestacion_medica) REFERENCES prestaciones_medicas(id_prestacion_medica),
     FOREIGN KEY (legajo_paciente) REFERENCES pacientes(legajo_paciente),
-    FOREIGN KEY (id_prestacion_tentativa) REFERENCES prestaciones(id_prestacion),
-    FOREIGN KEY (estado_turno) REFERENCES estados_turnos(id_estado_turno),
-    FOREIGN KEY (consultorio_asignado) REFERENCES consultorios(numero_consultorio)
+    FOREIGN KEY (id_prestacion_obra_social_inicial) REFERENCES prestaciones_obras_sociales(id_prestacion_obra_social),
+    FOREIGN KEY (estado_turno) REFERENCES estados_turnos(id_estado_turno)
 );
 
 -- Tabla de Ocupación de Consultorios
 CREATE TABLE ocupacion_consultorios (
     id_ocupacion VARCHAR(30),
     legajo_empleado VARCHAR(30) NOT NULL,
-    numero_consultorio INT NOT NULL,
+    id_consultorio INT NOT NULL,
     fecha_hora_inicio DATETIME NOT NULL,
     fecha_hora_fin DATETIME NOT NULL,
     PRIMARY KEY (id_ocupacion),
     FOREIGN KEY (legajo_empleado) REFERENCES empleados(legajo_empleado),
-    FOREIGN KEY (numero_consultorio) REFERENCES consultorios(numero_consultorio)
+    FOREIGN KEY (id_consultorio) REFERENCES consultorios(id_consultorio)
 );
 
 -- Tabla de Anuncios en Recepción
-CREATE TABLE registro_visitas_pacientes (
-    id_visita VARCHAR(30),
+CREATE TABLE recepcion_pacientes (
+    id_recepcion VARCHAR(30),
+    id_puesto_recepcion INT DEFAULT NULL,
     id_turno VARCHAR(30), 
-    consultorio_asignado INT,
-    prestacion_efectiva INT,
+    id_consultorio_asignado INT,
+    id_prestacion_obra_social_final INT,
     fecha_hora_anuncio DATETIME,
     fecha_hora_ingreso_consultorio DATETIME,
     fecha_hora_egreso_consultorio DATETIME,
-    PRIMARY KEY (id_visita),
+    PRIMARY KEY (id_recepcion),
     FOREIGN KEY (id_turno) REFERENCES turnos_otorgados(id_turno), 
-    FOREIGN KEY (consultorio_asignado) REFERENCES consultorios(numero_consultorio),
-    FOREIGN KEY (prestacion_efectiva) REFERENCES prestaciones(id_prestacion)
+    FOREIGN KEY (id_consultorio_asignado) REFERENCES consultorios(id_consultorio),
+    FOREIGN KEY (id_prestacion_obra_social_final) REFERENCES prestaciones_obras_sociales(id_prestacion_obra_social)
 );
 
 
