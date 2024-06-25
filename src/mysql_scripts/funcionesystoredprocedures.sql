@@ -134,3 +134,36 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+/*
+ Funcion que devuelve la cantidad de registros duplicados en una tabla comparando un numero
+ N de columnas pasadas por parametro.
+
+*/DELIMITER //
+
+CREATE PROCEDURE contar_duplicados_procedure(
+    IN p_tabla VARCHAR(255),
+    IN p_columnas VARCHAR(1000)
+)
+BEGIN
+    DECLARE sql_query TEXT;
+
+    -- Construcción de la consulta dinámica
+    SET @sql_query := CONCAT(
+        'SELECT COUNT(*) AS duplicados_count ',
+        'FROM (',
+        'SELECT ', p_columnas, ', COUNT(*) as num_duplicados ',
+        'FROM ', p_tabla, ' ',
+        'GROUP BY ', p_columnas, ' ',
+        'HAVING COUNT(*) > 1',
+        ') AS subconsulta'
+    );
+
+    -- Preparar y ejecutar la consulta dinámica
+    PREPARE stmt FROM @sql_query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+END //
+
+DELIMITER ;

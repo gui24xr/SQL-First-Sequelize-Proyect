@@ -106,3 +106,76 @@ BEGIN
     END IF;
 END
 $$ DELIMITER ;
+
+
+
+
+
+/*
+ Se asegiura de cuidar la integridad referencial en la tabla prestaciones_habilitadas_medicas.
+ 1- Tiene que existir la prestacion medica en la tabla prestaciones_medicas para poder ser agregada
+ 2- Tiene que existir la prestacion medica en la tabla prestaciones_medicas para poder ser agregada
+ Si una de las 2 no existen entonces se lanza error y no se permite la insercion.
+ Se tienen que dar las 2 condiciones
+
+ Otra condicion importante para esta tabla es que no se repitan las tuplas
+*/
+DELIMITER $$
+CREATE TRIGGER before_insert_prestaciones_habilitadas_medicos
+BEFORE INSERT ON prestaciones_habilitadas_medicos
+FOR EACH ROW
+BEGIN
+    DECLARE coincidencias_tabla1 INT;
+    DECLARE coincidencias_tabla2 INT;
+    DECLARE mensaje_error TEXT;
+    DECLARE lanzar_error BOOLEAN DEFAULT false;
+    DECLARE registros_duplicados DEFAULT 0;
+
+    /* Busco que exista la prestacion medica en la tabla prestaciones_medicas */
+    SELECT COUNT(*) INTO coincidencias_tabla1
+    FROM prestaciones_medicas
+    WHERE id_prestacion_medica = NEW.id_prestacion_medica;
+
+    /* Busco que exista la prestacion de obra social en la tabla prestaciones_obras_sociales */
+    SELECT COUNT(*) INTO coincidencias_tabla2
+    FROM prestaciones_obras_sociales
+    WHERE id_prestacion_obra_social = NEW.id_prestacion_obra_social;
+
+    /* Si no hay coincidencias, no permito el ingreso, lanzo error */
+    IF coincidencias_tabla1 = 0 THEN
+        BEGIN
+            SET mensaje_error = CONCAT('No existe la prestacion medica con ID ', NEW.id_prestacion_medica, ', es necesario registrarla previamente...');
+            SET lanzar_error = true;
+        END;
+    END IF;
+
+    /* Si no hay coincidencias, no permito el ingreso, lanzo error */
+    IF coincidencias_tabla2 = 0 THEN
+        BEGIN
+            SET mensaje_error = CONCAT('No existe la prestacion de obra social con ID ', NEW.id_prestacion_obra_social, ', es necesario registrarla previamente...');
+            SET lanzar_error = true;
+        END;
+    END IF;
+
+    /* Si hay duplicados tampoco permito el ingreso */
+    SELECT COUNT(*) INTO registros_duplicados
+    FROM prestaciones_habilitadas_medicos
+    GROUP BY id_prestacion_obra_social
+    HAVING COUNT(*) > 1
+    
+    
+    IF registros_duplicados > 0 THEN 
+        BEGIN
+            SET mensaje_error = CONCAT('Para la prestacion medica con ID ', NEW.id_prestacion_medica, ' ya tiene ingresada la prestacion de obra social con ID ', NEW.id_prestacion_obra_social, '...');
+            SET lanzar_error = true;
+        END;
+    END IF;
+
+    -- Si hubo falla, lanzo el error
+    IF lanzar_error THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = mensaje_error;
+    END IF;
+
+END$$
+DELIMITER ;
