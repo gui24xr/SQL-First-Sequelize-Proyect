@@ -129,7 +129,7 @@ BEGIN
     DECLARE coincidencias_tabla2 INT;
     DECLARE mensaje_error TEXT;
     DECLARE lanzar_error BOOLEAN DEFAULT false;
-    DECLARE registros_duplicados DEFAULT 0;
+    DECLARE registros_duplicados INT DEFAULT 0;
 
     /* Busco que exista la prestacion medica en la tabla prestaciones_medicas */
     SELECT COUNT(*) INTO coincidencias_tabla1
@@ -160,10 +160,10 @@ BEGIN
     /* Si hay duplicados tampoco permito el ingreso */
     SELECT COUNT(*) INTO registros_duplicados
     FROM prestaciones_habilitadas_medicos
-    GROUP BY id_prestacion_obra_social
-    HAVING COUNT(*) > 1
+    GROUP BY id_prestacion_medica,id_prestacion_obra_social
+    HAVING COUNT(*) > 1;
     
-    
+ 
     IF registros_duplicados > 0 THEN 
         BEGIN
             SET mensaje_error = CONCAT('Para la prestacion medica con ID ', NEW.id_prestacion_medica, ' ya tiene ingresada la prestacion de obra social con ID ', NEW.id_prestacion_obra_social, '...');
@@ -173,6 +173,7 @@ BEGIN
 
     -- Si hubo falla, lanzo el error
     IF lanzar_error THEN
+    
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = mensaje_error;
     END IF;

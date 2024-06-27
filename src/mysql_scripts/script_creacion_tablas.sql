@@ -118,8 +118,8 @@ CREATE TABLE datos_personales (
     telefonos INT DEFAULT NULL, 
     email_contacto VARCHAR(254),
     PRIMARY KEY (dni),
-    FOREIGN KEY (domicilio) REFERENCES datos_domicilios(id_datos_domicilio),
-    FOREIGN KEY (telefonos) REFERENCES datos_telefonicos(id_datos_telefonicos)
+    FOREIGN KEY (domicilio) REFERENCES datos_domicilios(id_datos_domicilio) ON UPDATE CASCADE  ON DELETE SET NULL,
+    FOREIGN KEY (telefonos) REFERENCES datos_telefonicos(id_datos_telefonicos) ON UPDATE CASCADE  ON DELETE SET NULL
 );
 
 

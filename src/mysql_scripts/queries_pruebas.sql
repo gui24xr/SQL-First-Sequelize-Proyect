@@ -28,6 +28,7 @@ select * from datos_personales;
 select * from empleados;
 
 DROP TRIGGER IF EXISTS before_insert_empleados;
+DROP TRIGGER IF EXISTS before_insert_prestaciones_habilitadas_medicos;
 
 select * from prestaciones_medicas;
 select * from prestaciones_obras_sociales;
@@ -37,8 +38,10 @@ insert into prestaciones_habilitadas_medicos
 (id_prestacion_medica,id_prestacion_obra_social)
 VALUES
 (1,1),
-(1,10)
-;
+(1,1),
+(2,2),
+(2,1),
+(2,2);
 
 select * from prestaciones_medicas;
 select * from prestaciones_obras_sociales;
