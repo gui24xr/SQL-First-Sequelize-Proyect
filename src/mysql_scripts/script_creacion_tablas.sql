@@ -24,7 +24,9 @@ CREATE TABLE roles_empleados(
     id_funcion INT AUTO_INCREMENT,
     funcion VARCHAR(30) NOT NULL,
     abreviatura_funcion VARCHAR(3) UNIQUE,
-    PRIMARY KEY (id_funcion)
+    id_user_rol INT, -- Relacion funcion empleado - Privilegios en sistema.
+    PRIMARY KEY (id_funcion),
+    FOREIGN KEY (id_user_rol) REFERENCES roles_usuario_sistema(id_user_rol)
 );
 
 -- Tabla de estados turnos.
@@ -57,8 +59,7 @@ CREATE TABLE consultorios (
     id_sede_establecimiento INT DEFAULT NULL,
     nombre_consultorio VARCHAR(100),
     en_servicio BOOLEAN,
-    PRIMARY KEY (id_consultorio),
-    FOREIGN KEY (id_sede_establecimiento) REFERENCES sedes_establecimiento(id_sede_establecimiento)
+    PRIMARY KEY (id_consultorio)
 );
 
 -- Tabla especialidades
@@ -94,16 +95,16 @@ CREATE TABLE datos_telefonicos (
 
 -- Tabla de Usuarios del Sistema
 CREATE TABLE usuarios_sistema (
-    user_id VARCHAR(30),
+    user_id INT AUTO_INCREMENT,
+    user_dni VARCHAR(30),
     user_email VARCHAR(254),
     user_password VARCHAR(255) NOT NULL,
-    user_rol INT,
-    user_status BOOLEAN DEFAULT TRUE,
+    user_rol INT DEFAULT NULL,
+    user_status BOOLEAN DEFAULT FALSE,
     user_last_connection DATE DEFAULT NULL,
     user_password_recovery_code VARCHAR(30) DEFAULT NULL,
     user_password_recovery_expiration DATE DEFAULT NULL,
-    PRIMARY KEY (user_id),
-    FOREIGN KEY (user_rol) REFERENCES roles_usuario_sistema(id_user_rol)
+    PRIMARY KEY (user_id)
 );
 
 
@@ -117,6 +118,7 @@ CREATE TABLE datos_personales (
     domicilio INT DEFAULT NULL,
     telefonos INT DEFAULT NULL, 
     email_contacto VARCHAR(254),
+    user_system_id INT,
     PRIMARY KEY (dni),
     FOREIGN KEY (domicilio) REFERENCES datos_domicilios(id_datos_domicilio) ON UPDATE CASCADE  ON DELETE SET NULL,
     FOREIGN KEY (telefonos) REFERENCES datos_telefonicos(id_datos_telefonicos) ON UPDATE CASCADE  ON DELETE SET NULL
@@ -132,7 +134,7 @@ CREATE TABLE empleados (
     id_funcion INT,
     PRIMARY KEY (legajo_empleado),
     FOREIGN KEY (dni) REFERENCES datos_personales(dni),
-    FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id),
+    -- FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id),
     FOREIGN KEY (id_funcion) REFERENCES roles_empleados(id_funcion)
  );
 
@@ -163,8 +165,8 @@ CREATE TABLE pacientes (
     dni VARCHAR(30),
     user_system VARCHAR(30) DEFAULT NULL,
     PRIMARY KEY (legajo_paciente),
-    FOREIGN KEY (dni) REFERENCES datos_personales(dni),
-    FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id)
+    FOREIGN KEY (dni) REFERENCES datos_personales(dni)
+    -- FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id)
 );
 
 

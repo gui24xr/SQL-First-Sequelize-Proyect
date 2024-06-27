@@ -16,20 +16,21 @@ VALUES
 ('user_recepcion'),
 ('user_medico'),
 ('user_paciente'),
-('user_empleado');
+('user_empleado'),
+('user_enfermeria');
         
         
 -- Tabla roles empleados
 INSERT INTO roles_empleados 
-(funcion,abreviatura_funcion)
+(funcion,abreviatura_funcion,id_user_rol)
 VALUES
-('medico','MED'),
-('limpieza','LPZ'),
-('administracion','ADM'),
-('mantenimiento','MAN'),
-('recepcion','REC'),
-('cocina','COC'),
-('enfermeria','ENF');
+('medico','MED',5),
+('limpieza','LPZ',7),
+('administracion','ADM',3),
+('mantenimiento','MAN',7),
+('recepcion','REC',4),
+('cocina','COC',7),
+('enfermeria','ENF',8);
 
 
 -- Tabla de estados turnos
