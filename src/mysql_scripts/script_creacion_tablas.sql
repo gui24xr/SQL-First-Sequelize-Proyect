@@ -71,13 +71,14 @@ CREATE TABLE especialidades_medicas (
 
 -- Tabla datos domicilios
 CREATE TABLE datos_domicilios (
-    id_datos_domicilio INT AUTO_INCREMENT,
-    calle VARCHAR(255) NOT NULL,
-    altura_calle INT NOT NULL,
-    codigo_postal VARCHAR(20) NOT NULL,
-    localidad VARCHAR(100) NOT NULL,
-    provincia VARCHAR(100) NOT NULL,
-    pais VARCHAR(100) NOT NULL,
+    id_datos_domicilio VARCHAR(30),
+    dni VARCHAR(30) UNIQUE,
+    calle VARCHAR(255) DEFAULT NULL,
+    altura_calle INT DEFAULT NULL,
+    codigo_postal VARCHAR(20) DEFAULT NULL,
+    localidad VARCHAR(100) DEFAULT NULL,
+    provincia VARCHAR(100) DEFAULT NULL,
+    pais VARCHAR(100) DEFAULT NULL,
     latitud DECIMAL(10, 8) DEFAULT '0.0', 
     longitud DECIMAL(11, 8) DEFAULT '0.0',
     PRIMARY KEY (id_datos_domicilio)
@@ -85,18 +86,19 @@ CREATE TABLE datos_domicilios (
 
 -- Tabla datos_telefonicos
 CREATE TABLE datos_telefonicos (
-    id_datos_telefonicos INT AUTO_INCREMENT,
-    telefono_celular VARCHAR(30) NOT NULL,
-    telefono_fijo VARCHAR(30),
-    telefono_urgencia VARCHAR(30) NOT NULL,
+    id_datos_telefonicos  VARCHAR(30),
+    dni VARCHAR(30) UNIQUE,
+    telefono_celular VARCHAR(30) DEFAULT NULL,
+    telefono_fijo VARCHAR(30) DEFAULT NULL,
+    telefono_urgencia VARCHAR(30) DEFAULT NULL,
     PRIMARY KEY (id_datos_telefonicos)
 );
 
 
 -- Tabla de Usuarios del Sistema
 CREATE TABLE usuarios_sistema (
-    user_id INT AUTO_INCREMENT,
-    user_dni VARCHAR(30),
+    user_id VARCHAR(30),
+    user_dni VARCHAR(30) UNIQUE,
     user_email VARCHAR(254),
     user_password VARCHAR(255) NOT NULL,
     user_rol INT DEFAULT NULL,
@@ -111,43 +113,52 @@ CREATE TABLE usuarios_sistema (
 -- Tabla de datos personales
 CREATE TABLE datos_personales (
     dni VARCHAR(30),
-    nombre1 VARCHAR(255) NOT NULL,
+    nombre1 VARCHAR(255),
     nombre2 VARCHAR(255) DEFAULT NULL,
-    apellido VARCHAR(255) NOT NULL,
+    apellido VARCHAR(255) DEFAULT NULL,
     fecha_nacimiento DATE DEFAULT NULL ,
-    domicilio INT DEFAULT NULL,
-    telefonos INT DEFAULT NULL, 
-    email_contacto VARCHAR(254),
-    user_system_id INT,
+    email VARCHAR(254),
+    id_datos_domicilio VARCHAR(30) DEFAULT NULL,
+    id_datos_telefonicos VARCHAR(30) DEFAULT NULL, 
+    id_user_system VARCHAR(30) DEFAULT NULL,
     PRIMARY KEY (dni),
-    FOREIGN KEY (domicilio) REFERENCES datos_domicilios(id_datos_domicilio) ON UPDATE CASCADE  ON DELETE SET NULL,
-    FOREIGN KEY (telefonos) REFERENCES datos_telefonicos(id_datos_telefonicos) ON UPDATE CASCADE  ON DELETE SET NULL
+    FOREIGN KEY (id_datos_domicilio) REFERENCES datos_domicilios(id_datos_domicilio) ON UPDATE CASCADE  ON DELETE SET NULL,
+    FOREIGN KEY (id_datos_telefonicos) REFERENCES datos_telefonicos(id_datos_telefonicos) ON UPDATE CASCADE  ON DELETE SET NULL,
+    FOREIGN KEY (id_user_system) REFERENCES usuarios_sistema(user_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
+-- Tabla de Pacientes
+CREATE TABLE pacientes (
+    legajo_paciente VARCHAR(30),
+    dni VARCHAR(30) UNIQUE,
+    PRIMARY KEY (legajo_paciente),
+    FOREIGN KEY (dni) REFERENCES datos_personales(dni) ON UPDATE CASCADE ON DELETE CASCADE
+    -- FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id)
+);
 
 
 -- Tabla de Empleados
 CREATE TABLE empleados (
     legajo_empleado VARCHAR(30),
-    dni VARCHAR(30),
-    user_system VARCHAR(30) DEFAULT NULL,
+    dni VARCHAR(30) UNIQUE,
     id_funcion INT,
     PRIMARY KEY (legajo_empleado),
-    FOREIGN KEY (dni) REFERENCES datos_personales(dni),
-    -- FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id),
-    FOREIGN KEY (id_funcion) REFERENCES roles_empleados(id_funcion)
+    FOREIGN KEY (dni) REFERENCES datos_personales(dni) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_funcion) REFERENCES roles_empleados(id_funcion) ON UPDATE CASCADE ON DELETE SET NULL
  );
+
 
  -- Tabla de Médicos
 CREATE TABLE prestaciones_medicas (
     id_prestacion_medica INT AUTO_INCREMENT,
     id_especialidad INT,
     matricula_medico VARCHAR(30),
-    legajo_empleado VARCHAR(30) NOT NULL,
+    legajo_empleado VARCHAR(30) NOT NULL, /*Obvio debe ser medico...*/
     PRIMARY KEY (id_prestacion_medica),
-    FOREIGN KEY (id_especialidad) REFERENCES especialidades_medicas(id_especialidad),
-    FOREIGN KEY (legajo_empleado) REFERENCES empleados(legajo_empleado)
+    FOREIGN KEY (id_especialidad) REFERENCES especialidades_medicas(id_especialidad) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (legajo_empleado) REFERENCES empleados(legajo_empleado) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
 
 -- Tabla para relacionar las prestaciones de obra social con las prestaciones médicas de los médicos
 CREATE TABLE prestaciones_habilitadas_medicos (
@@ -155,19 +166,10 @@ CREATE TABLE prestaciones_habilitadas_medicos (
     id_prestacion_medica INT,
     id_prestacion_obra_social INT,
     PRIMARY KEY (id_prestacion_habilitada),
-    FOREIGN KEY (id_prestacion_medica) REFERENCES prestaciones_medicas( id_prestacion_medica),
-    FOREIGN KEY (id_prestacion_obra_social) REFERENCES prestaciones_obras_sociales(id_prestacion_obra_social)
+    FOREIGN KEY (id_prestacion_medica) REFERENCES prestaciones_medicas(id_prestacion_medica) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_prestacion_obra_social) REFERENCES prestaciones_obras_sociales(id_prestacion_obra_social) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
--- Tabla de Pacientes
-CREATE TABLE pacientes (
-    legajo_paciente VARCHAR(30),
-    dni VARCHAR(30),
-    user_system VARCHAR(30) DEFAULT NULL,
-    PRIMARY KEY (legajo_paciente),
-    FOREIGN KEY (dni) REFERENCES datos_personales(dni)
-    -- FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id)
-);
 
 
 
@@ -181,7 +183,7 @@ CREATE TABLE registros_historias_clinicas (
     medicacion TEXT,
     fecha_hora DATETIME,
     PRIMARY KEY (id_registro),
-    FOREIGN KEY (id_prestacion_medica) REFERENCES prestaciones_medicas(id_prestacion_medica),
+    FOREIGN KEY (id_prestacion_medica) REFERENCES prestaciones_medicas(id_prestacion_medica) ,
     FOREIGN KEY (legajo_paciente) REFERENCES pacientes(legajo_paciente)
 );
 
