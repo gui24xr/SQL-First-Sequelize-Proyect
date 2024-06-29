@@ -13,20 +13,19 @@ CREATE TABLE contadores (
 );
 
 -- Tabla roles usuarios sistema
-CREATE TABLE roles_usuario_sistema(
-    id_user_rol INT AUTO_INCREMENT,
-    rol VARCHAR(30) NOT NULL,
-    PRIMARY KEY (id_user_rol)
+CREATE TABLE tipos_usuario_sistema (
+    codigo_tipo_usuario VARCHAR(30),
+    nombre_tipo_usuario VARCHAR(30),
+    PRIMARY KEY (codigo_tipo_usuario)
 );
 
--- Tabla de roles empleados
-CREATE TABLE roles_empleados(
-    id_funcion INT AUTO_INCREMENT,
-    funcion VARCHAR(30) NOT NULL,
-    abreviatura_funcion VARCHAR(3) UNIQUE,
-    id_user_rol INT, -- Relacion funcion empleado - Privilegios en sistema.
-    PRIMARY KEY (id_funcion),
-    FOREIGN KEY (id_user_rol) REFERENCES roles_usuario_sistema(id_user_rol)
+-- Tabla de funciones empleados.
+CREATE TABLE funciones_empleados(
+    codigo_funcion_empleado VARCHAR(30),
+    nombre_funcion_empleado VARCHAR(3) UNIQUE,
+    codigo_tipo_usuario_sistema VARCHAR(30), -- Relacion funcion empleado - Privilegios en sistema.
+    PRIMARY KEY (codigo_funcion_empleado),
+    FOREIGN KEY (codigo_tipo_usuario_sistema) REFERENCES tipos_usuario_sistema(codigo_tipo_usuario) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 -- Tabla de estados turnos.
@@ -101,12 +100,13 @@ CREATE TABLE usuarios_sistema (
     user_dni VARCHAR(30) UNIQUE,
     user_email VARCHAR(254),
     user_password VARCHAR(255) NOT NULL,
-    user_rol INT DEFAULT NULL,
+    user_tipo VARCHAR(30) DEFAULT NULL,
     user_status BOOLEAN DEFAULT FALSE,
     user_last_connection DATE DEFAULT NULL,
     user_password_recovery_code VARCHAR(30) DEFAULT NULL,
     user_password_recovery_expiration DATE DEFAULT NULL,
-    PRIMARY KEY (user_id)
+    PRIMARY KEY (user_id),
+    FOREIGN KEY (user_tipo) REFERENCES tipos_usuario_sistema(codigo_tipo_usuario) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 
@@ -141,10 +141,10 @@ CREATE TABLE pacientes (
 CREATE TABLE empleados (
     legajo_empleado VARCHAR(30),
     dni VARCHAR(30) UNIQUE,
-    id_funcion INT,
+    codigo_funcion_empleado VARCHAR(30) ,
     PRIMARY KEY (legajo_empleado),
     FOREIGN KEY (dni) REFERENCES datos_personales(dni) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (id_funcion) REFERENCES roles_empleados(id_funcion) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (codigo_funcion_empleado) REFERENCES funciones_empleados(codigo_funcion_empleado) ON UPDATE CASCADE ON DELETE SET NULL
  );
 
 
@@ -201,7 +201,7 @@ CREATE TABLE turnos_otorgados (
     FOREIGN KEY (id_prestacion_medica) REFERENCES prestaciones_medicas(id_prestacion_medica),
     FOREIGN KEY (legajo_paciente) REFERENCES pacientes(legajo_paciente),
     FOREIGN KEY (id_prestacion_obra_social_inicial) REFERENCES prestaciones_obras_sociales(id_prestacion_obra_social),
-    FOREIGN KEY (estado_turno) REFERENCES estados_turnos(id_estado_turno)
+    FOREIGN KEY (estado_turno) REFERENCES estados_turnos(id_estado_turno) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 -- Tabla de Ocupación de Consultorios

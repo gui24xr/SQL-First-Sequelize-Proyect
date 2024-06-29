@@ -7,30 +7,29 @@ VALUES
 
 
 -- Tabla de roles_usuario_sistema
-INSERT INTO roles_usuario_sistema 
-(rol)
+INSERT INTO tipos_usuario_sistema 
+(codigo_tipo_usuario, nombre_tipo_usuario)
 VALUES  
-('user_dev'),
-('user_premium'),
-('user_admin'),
-('user_recepcion'),
-('user_medico'),
-('user_paciente'),
-('user_empleado'),
-('user_enfermeria');
+('DEV','user_dev'),
+('ADM','user_admin'),
+('REC','user_recepcion'),
+('MED','user_medico'),
+('PAC','user_paciente'),
+('EMP','user_empleado'),
+('ENF','user_enfermeria');
         
         
 -- Tabla roles empleados
-INSERT INTO roles_empleados 
-(funcion,abreviatura_funcion,id_user_rol)
+INSERT INTO funciones_empleados 
+(codigo_funcion_empleado,nombre_funcion_empleado,codigo_tipo_usuario_sistema)
 VALUES
-('medico','MED',5),
-('limpieza','LPZ',7),
-('administracion','ADM',3),
-('mantenimiento','MAN',7),
-('recepcion','REC',4),
-('cocina','COC',7),
-('enfermeria','ENF',8);
+('MED', 'Medico', 'MED'),
+('LPZ', 'Limpieza', 'LPZ'),
+('ADM', 'Administracion', 'ADM'),
+('MAN', 'Mantenimiento', 'EMP'),
+('REC', 'Recepcion', 'REC'),
+('COC', 'Cocina', 'EMP'),
+('ENF', 'Enfermeria', 'ENF');
 
 
 -- Tabla de estados turnos
