@@ -1,4 +1,5 @@
 
+
 -- Tabla contadores
 INSERT INTO contadores
 (fecha,turnos_otorgados,recepciones_pacientes,ocupaciones_consultorios,registros_historias_clinicas)
@@ -24,7 +25,7 @@ INSERT INTO funciones_empleados
 (codigo_funcion_empleado,nombre_funcion_empleado,codigo_tipo_usuario_sistema)
 VALUES
 ('MED', 'Medico', 'MED'),
-('LPZ', 'Limpieza', 'LPZ'),
+('LPZ', 'Limpieza', 'EMP'),
 ('ADM', 'Administracion', 'ADM'),
 ('MAN', 'Mantenimiento', 'EMP'),
 ('REC', 'Recepcion', 'REC'),
@@ -91,7 +92,7 @@ VALUES
 
 -- Tabla especialidades medicas
 INSERT INTO especialidades_medicas
-(nombre)
+(nombre_especialidad)
 VALUES
 ('Cardiología'),
 ('Dermatología'),

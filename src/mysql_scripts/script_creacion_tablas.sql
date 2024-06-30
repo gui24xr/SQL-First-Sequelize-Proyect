@@ -1,6 +1,15 @@
 CREATE DATABASE administracionconsultorios;
 USE administracionconsultorios;
 
+-- Tabla para ingresar datos en formato JSON.
+CREATE TABLE datos_ingresados_json(
+    id_ingreso_datos INT AUTO_INCREMENT,
+    ingresado DATETIME DEFAULT NOW(),
+    categoria ENUM ('datos_personales','empleados','pacientes','turnos'),
+    data JSON,
+    PRIMARY KEY(id_ingreso_datos)
+);
+
 -- Tabla contadores.
 CREATE TABLE contadores (
     id_contador INT AUTO_INCREMENT,
@@ -22,7 +31,7 @@ CREATE TABLE tipos_usuario_sistema (
 -- Tabla de funciones empleados.
 CREATE TABLE funciones_empleados(
     codigo_funcion_empleado VARCHAR(30),
-    nombre_funcion_empleado VARCHAR(3) UNIQUE,
+    nombre_funcion_empleado VARCHAR(30) UNIQUE,
     codigo_tipo_usuario_sistema VARCHAR(30), -- Relacion funcion empleado - Privilegios en sistema.
     PRIMARY KEY (codigo_funcion_empleado),
     FOREIGN KEY (codigo_tipo_usuario_sistema) REFERENCES tipos_usuario_sistema(codigo_tipo_usuario) ON UPDATE CASCADE ON DELETE SET NULL
@@ -64,13 +73,47 @@ CREATE TABLE consultorios (
 -- Tabla especialidades
 CREATE TABLE especialidades_medicas (
     id_especialidad INT AUTO_INCREMENT,
-    nombre VARCHAR(100),
+    nombre_especialidad VARCHAR(100),
     PRIMARY KEY (id_especialidad)
 );
 
+
+-- Tabla de Usuarios del Sistema
+CREATE TABLE usuarios_sistema (
+    user_system_id VARCHAR(30),
+    user_password VARCHAR(255) NOT NULL,
+    user_tipo VARCHAR(30) DEFAULT NULL,
+    user_status BOOLEAN DEFAULT FALSE,
+    user_last_connection DATE DEFAULT NULL,
+    user_password_recovery_code VARCHAR(30) DEFAULT NULL,
+    user_password_recovery_expiration DATE DEFAULT NULL,
+    PRIMARY KEY (user_system_id),
+    FOREIGN KEY (user_tipo) REFERENCES tipos_usuario_sistema(codigo_tipo_usuario) ON UPDATE CASCADE ON DELETE SET NULL
+);
+
+
+-- Tabla de datos personales
+CREATE TABLE fichas_datos_personales (
+    id_ficha_datos_personales INT AUTO_INCREMENT,
+    dni VARCHAR(30) UNIQUE,
+    nombre1 VARCHAR(255),
+    nombre2 VARCHAR(255) DEFAULT NULL,
+    apellido VARCHAR(255) DEFAULT NULL,
+    fecha_nacimiento DATE DEFAULT NULL ,
+    email VARCHAR(254),
+    -- id_datos_domicilio VARCHAR(30) DEFAULT NULL,
+    -- id_datos_telefonicos VARCHAR(30) DEFAULT NULL, 
+    user_system_id VARCHAR(30) DEFAULT NULL,
+    PRIMARY KEY (id_ficha_datos_personales),
+    -- FOREIGN KEY (id_datos_domicilio) REFERENCES datos_domicilios(id_datos_domicilio) ON UPDATE CASCADE  ON DELETE SET NULL,
+    -- FOREIGN KEY (id_datos_telefonicos) REFERENCES datos_telefonicos(id_datos_telefonicos) ON UPDATE CASCADE  ON DELETE SET NULL,
+    FOREIGN KEY (user_system_id) REFERENCES usuarios_sistema(user_system_id) ON UPDATE CASCADE ON DELETE SET NULL
+);
+
+
 -- Tabla datos domicilios
 CREATE TABLE datos_domicilios (
-    id_datos_domicilio VARCHAR(30),
+    id_datos_domicilio INT AUTO_INCREMENT,
     dni VARCHAR(30) UNIQUE,
     calle VARCHAR(255) DEFAULT NULL,
     altura_calle INT DEFAULT NULL,
@@ -80,59 +123,31 @@ CREATE TABLE datos_domicilios (
     pais VARCHAR(100) DEFAULT NULL,
     latitud DECIMAL(10, 8) DEFAULT '0.0', 
     longitud DECIMAL(11, 8) DEFAULT '0.0',
-    PRIMARY KEY (id_datos_domicilio)
+    PRIMARY KEY (id_datos_domicilio),
+    FOREIGN KEY (dni) REFERENCES fichas_datos_personales(dni) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Tabla datos_telefonicos
 CREATE TABLE datos_telefonicos (
-    id_datos_telefonicos  VARCHAR(30),
+    id_datos_telefonicos  INT AUTO_INCREMENT,
     dni VARCHAR(30) UNIQUE,
     telefono_celular VARCHAR(30) DEFAULT NULL,
     telefono_fijo VARCHAR(30) DEFAULT NULL,
     telefono_urgencia VARCHAR(30) DEFAULT NULL,
-    PRIMARY KEY (id_datos_telefonicos)
+    PRIMARY KEY (id_datos_telefonicos),
+    FOREIGN KEY (dni) REFERENCES fichas_datos_personales(dni) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
--- Tabla de Usuarios del Sistema
-CREATE TABLE usuarios_sistema (
-    user_id VARCHAR(30),
-    user_dni VARCHAR(30) UNIQUE,
-    user_email VARCHAR(254),
-    user_password VARCHAR(255) NOT NULL,
-    user_tipo VARCHAR(30) DEFAULT NULL,
-    user_status BOOLEAN DEFAULT FALSE,
-    user_last_connection DATE DEFAULT NULL,
-    user_password_recovery_code VARCHAR(30) DEFAULT NULL,
-    user_password_recovery_expiration DATE DEFAULT NULL,
-    PRIMARY KEY (user_id),
-    FOREIGN KEY (user_tipo) REFERENCES tipos_usuario_sistema(codigo_tipo_usuario) ON UPDATE CASCADE ON DELETE SET NULL
-);
 
 
--- Tabla de datos personales
-CREATE TABLE datos_personales (
-    dni VARCHAR(30),
-    nombre1 VARCHAR(255),
-    nombre2 VARCHAR(255) DEFAULT NULL,
-    apellido VARCHAR(255) DEFAULT NULL,
-    fecha_nacimiento DATE DEFAULT NULL ,
-    email VARCHAR(254),
-    id_datos_domicilio VARCHAR(30) DEFAULT NULL,
-    id_datos_telefonicos VARCHAR(30) DEFAULT NULL, 
-    id_user_system VARCHAR(30) DEFAULT NULL,
-    PRIMARY KEY (dni),
-    FOREIGN KEY (id_datos_domicilio) REFERENCES datos_domicilios(id_datos_domicilio) ON UPDATE CASCADE  ON DELETE SET NULL,
-    FOREIGN KEY (id_datos_telefonicos) REFERENCES datos_telefonicos(id_datos_telefonicos) ON UPDATE CASCADE  ON DELETE SET NULL,
-    FOREIGN KEY (id_user_system) REFERENCES usuarios_sistema(user_id) ON UPDATE CASCADE ON DELETE SET NULL
-);
 
 -- Tabla de Pacientes
 CREATE TABLE pacientes (
     legajo_paciente VARCHAR(30),
-    dni VARCHAR(30) UNIQUE,
+    dni VARCHAR(30) UNIQUE NOT NULL,
     PRIMARY KEY (legajo_paciente),
-    FOREIGN KEY (dni) REFERENCES datos_personales(dni) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (dni) REFERENCES fichas_datos_personales(dni) ON UPDATE CASCADE ON DELETE CASCADE
     -- FOREIGN KEY (user_system) REFERENCES usuarios_sistema(user_id)
 );
 
@@ -140,10 +155,10 @@ CREATE TABLE pacientes (
 -- Tabla de Empleados
 CREATE TABLE empleados (
     legajo_empleado VARCHAR(30),
-    dni VARCHAR(30) UNIQUE,
-    codigo_funcion_empleado VARCHAR(30) ,
+    dni VARCHAR(30) UNIQUE NOT NULL,
+    codigo_funcion_empleado VARCHAR(30),
     PRIMARY KEY (legajo_empleado),
-    FOREIGN KEY (dni) REFERENCES datos_personales(dni) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (dni) REFERENCES fichas_datos_personales(dni) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (codigo_funcion_empleado) REFERENCES funciones_empleados(codigo_funcion_empleado) ON UPDATE CASCADE ON DELETE SET NULL
  );
 
@@ -169,7 +184,6 @@ CREATE TABLE prestaciones_habilitadas_medicos (
     FOREIGN KEY (id_prestacion_medica) REFERENCES prestaciones_medicas(id_prestacion_medica) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (id_prestacion_obra_social) REFERENCES prestaciones_obras_sociales(id_prestacion_obra_social) ON UPDATE CASCADE ON DELETE CASCADE
 );
-
 
 
 
@@ -206,19 +220,19 @@ CREATE TABLE turnos_otorgados (
 
 -- Tabla de Ocupación de Consultorios
 CREATE TABLE ocupacion_consultorios (
-    id_ocupacion VARCHAR(30),
-    legajo_empleado VARCHAR(30) NOT NULL,
+    id_ocupacion_consultorio VARCHAR(30),
+    legajo_empleado VARCHAR(30),
     id_consultorio INT NOT NULL,
     fecha_hora_inicio DATETIME NOT NULL,
-    fecha_hora_fin DATETIME NOT NULL,
-    PRIMARY KEY (id_ocupacion),
-    FOREIGN KEY (legajo_empleado) REFERENCES empleados(legajo_empleado),
-    FOREIGN KEY (id_consultorio) REFERENCES consultorios(id_consultorio)
+    fecha_hora_fin DATETIME,
+    PRIMARY KEY (id_ocupacion_consultorio),
+    FOREIGN KEY (legajo_empleado) REFERENCES empleados(legajo_empleado) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (id_consultorio) REFERENCES consultorios(id_consultorio) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Tabla de Anuncios en Recepción
 CREATE TABLE recepcion_pacientes (
-    id_recepcion VARCHAR(30),
+    id_recepcion_paciente VARCHAR(30),
     id_puesto_recepcion INT DEFAULT NULL,
     id_turno VARCHAR(30), 
     id_consultorio_asignado INT,
@@ -226,10 +240,10 @@ CREATE TABLE recepcion_pacientes (
     fecha_hora_anuncio DATETIME,
     fecha_hora_ingreso_consultorio DATETIME,
     fecha_hora_egreso_consultorio DATETIME,
-    PRIMARY KEY (id_recepcion),
-    FOREIGN KEY (id_turno) REFERENCES turnos_otorgados(id_turno), 
-    FOREIGN KEY (id_consultorio_asignado) REFERENCES consultorios(id_consultorio),
-    FOREIGN KEY (id_prestacion_obra_social_final) REFERENCES prestaciones_obras_sociales(id_prestacion_obra_social)
+    PRIMARY KEY (id_recepcion_paciente),
+    FOREIGN KEY (id_turno) REFERENCES turnos_otorgados(id_turno) ON UPDATE CASCADE ON DELETE CASCADE, 
+    FOREIGN KEY (id_consultorio_asignado) REFERENCES consultorios(id_consultorio) ON UPDATE CASCADE ON DELETE CASCADE ,
+    FOREIGN KEY (id_prestacion_obra_social_final) REFERENCES prestaciones_obras_sociales(id_prestacion_obra_social)  ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 
