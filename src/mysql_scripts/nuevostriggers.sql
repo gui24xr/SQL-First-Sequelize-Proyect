@@ -1,17 +1,23 @@
 
-/* EL objetivo es borrar todos los FK de datos personales, pero eso dependedera de si quiero que los datos se borren al borrar el user*/
+/* Luego de que se haga un insert into en pacientes construye un user con los permisos correspondientes. */
 DELIMITER //
 
-CREATE TRIGGER eliminar_datos_relacionados_datos_personales
-AFTER DELETE ON ficha_datos_personales
+CREATE TRIGGER pacientes_after_insert
+AFTER INSERT ON pacientes
 FOR EACH ROW
 BEGIN
-    -- Eliminar registro en datos_domicilios correspondiente al domicilio del usuario
-    DELETE FROM datos_domicilios WHERE id_datos_domicilio = OLD.id_datos_domicilio;
-    -- Eliminar registro en datos_telefonicos correspondiente a los teléfonos del usuario
-    DELETE FROM datos_telefonicos WHERE id_datos_telefonicos = OLD.id_datos_telefonicos;
-	-- Eliminar registro en usuarios_sistema correspondiente al user asociado.
-    DELETE FROM usuarios_sistema WHERE user_system_id = OLD.user_system_id;
+	/* Se inserto satisfactoriamente un paciente, vamos a crearle un user */
+    /* EL nuevo user inicia con status false ya que la persona lo debe activar antes de usarlo */
+    /* Tendra como contraseña el usuario + dni user */
+    /* EL tipo de usuario sera tipo de usuario paciente */
+    DECLARE codigo_sistema_pacientes VARCHAR(10);
+    SELECT codigo_tipo_usuario INTO codigo_sistema_pacientes FROM tipos_usuario_sistema WHERE codigo_tipo_usuario ='EMP';
+    INSERT INTO usuarios_sistema (user_system_id, user_password,user_tipo) VALUES (NEW.dni,CONCAT('usuario',NEW.dni),codigo_sistema_pacientes);
+    /* Ya creado el usuario lo ligamos a la ficha datos personales */
+    
+    UPDATE fichas_datos_personales SET user_system_id = NEW.dni WHERE dni = NEW.dni;
 END //
-
 DELIMITER ;
+
+
+

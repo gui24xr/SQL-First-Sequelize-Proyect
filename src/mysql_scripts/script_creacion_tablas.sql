@@ -24,7 +24,7 @@ CREATE TABLE contadores (
 -- Tabla roles usuarios sistema
 CREATE TABLE tipos_usuario_sistema (
     codigo_tipo_usuario VARCHAR(30),
-    nombre_tipo_usuario VARCHAR(30),
+    nombre_tipo_usuario VARCHAR(30) UNIQUE NOT NULL,
     PRIMARY KEY (codigo_tipo_usuario)
 );
 
@@ -88,7 +88,7 @@ CREATE TABLE usuarios_sistema (
     user_password_recovery_code VARCHAR(30) DEFAULT NULL,
     user_password_recovery_expiration DATE DEFAULT NULL,
     PRIMARY KEY (user_system_id),
-    FOREIGN KEY (user_tipo) REFERENCES tipos_usuario_sistema(codigo_tipo_usuario) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (user_tipo) REFERENCES tipos_usuario_sistema(nombre_tipo_usuario) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 
@@ -100,7 +100,7 @@ CREATE TABLE fichas_datos_personales (
     nombre2 VARCHAR(255) DEFAULT NULL,
     apellido VARCHAR(255) DEFAULT NULL,
     fecha_nacimiento DATE DEFAULT NULL ,
-    email VARCHAR(254),
+    email VARCHAR(254) NOT NULL,
     -- id_datos_domicilio VARCHAR(30) DEFAULT NULL,
     -- id_datos_telefonicos VARCHAR(30) DEFAULT NULL, 
     user_system_id VARCHAR(30) DEFAULT NULL,
@@ -131,7 +131,7 @@ CREATE TABLE datos_domicilios (
 CREATE TABLE datos_telefonicos (
     id_datos_telefonicos  INT AUTO_INCREMENT,
     dni VARCHAR(30) UNIQUE,
-    telefono_celular VARCHAR(30) DEFAULT NULL,
+    telefono_movil VARCHAR(30) DEFAULT NULL,
     telefono_fijo VARCHAR(30) DEFAULT NULL,
     telefono_urgencia VARCHAR(30) DEFAULT NULL,
     PRIMARY KEY (id_datos_telefonicos),
